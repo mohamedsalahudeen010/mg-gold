@@ -1,0 +1,94 @@
+<nav class="navbar">
+  <div class="nav-inner">
+    <span class="logo">MG Gold</span>
+    <input
+      class="search"
+      type="text"
+      placeholder="Search for products, brands and more"
+    />
+    <a routerLink="/products/new" class="sell-btn">+ Add Product</a>
+  </div>
+</nav>
+
+<!-- Category filter bar -->
+<div class="cat-bar">
+  <button
+    *ngFor="let c of categories"
+    [class.active]="selectedCat === c"
+    (click)="filterCat(c)"
+  >
+    {{ c }}
+  </button>
+</div>
+
+<!-- Results info -->
+<div class="page-wrap">
+  <p class="results-info" *ngIf="total">
+    Showing {{ products.length }} of {{ total }} products
+  </p>
+
+  <!-- Card grid -->
+  <div class="grid">
+    <div
+      class="card"
+      *ngFor="let p of products"
+      [routerLink]="['/products', p._id]"
+    >
+      <!-- Image area -->
+      <div class="card-img-wrap">
+        <img
+          [src]="getThumbnail(p)"
+          [alt]="p.name"
+          class="card-img"
+          onerror="this.src = 'https://placehold.co/300x300?text=No+Image'"
+        />
+        <span class="badge" *ngIf="p.stock < 5 && p.stock > 0"
+          >Only {{ p.stock }} left</span
+        >
+        <span class="badge out" *ngIf="p.stock === 0">Out of stock</span>
+        <span class="media-count" *ngIf="p.media.length > 1">
+          +{{ p.media.length - 1 }} more
+        </span>
+      </div>
+
+      <!-- Card info -->
+      <div class="card-body">
+        <p class="card-cat">{{ p.category }}</p>
+        <h3 class="card-name">{{ p.name }}</h3>
+        <div class="card-rating">
+          <span class="stars">★★★★☆</span>
+          <span class="rev">(128)</span>
+        </div>
+        <div class="card-price-row">
+          <span class="card-price">₹{{ p.price | number }}</span>
+          <span class="card-mrp">₹{{ p.price * 1.2 | number: "1.0-0" }}</span>
+          <span class="card-disc">20% off</span>
+        </div>
+        <p class="card-delivery">Free delivery</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty" *ngIf="!products.length">
+    <p>No products found.</p>
+    <a routerLink="/products/new" class="sell-btn">Add your first product</a>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="pages > 1">
+    <button (click)="loadPage(page - 1)" [disabled]="page === 1">
+      &#8592; Prev
+    </button>
+    <span
+      *ngFor="let n of pageArr()"
+      class="pg-num"
+      [class.active]="n === page"
+      (click)="loadPage(n)"
+      >{{ n }}</span
+    >
+    <button (click)="loadPage(page + 1)" [disabled]="page === pages">
+      Next &#8594;
+    </button>
+  </div>
+</div>

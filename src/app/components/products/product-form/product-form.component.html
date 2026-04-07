@@ -1,0 +1,130 @@
+<nav class="navbar">
+  <div class="nav-inner">
+    <a routerLink="/products" class="logo">ShopZone</a>
+  </div>
+</nav>
+
+<div class="form-page">
+  <div class="form-card">
+    <h2>{{ isEdit ? "Edit Product" : "List a New Product" }}</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <!-- Basic info -->
+      <div class="section-title">Basic Information</div>
+
+      <div class="field">
+        <label>Product Name *</label>
+        <input formControlName="name" placeholder="Enter product name" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea
+          formControlName="description"
+          rows="4"
+          placeholder="Describe your product"
+        ></textarea>
+      </div>
+      <div class="row-3">
+        <div class="field">
+          <label>Price (₹) *</label>
+          <input
+            formControlName="price"
+            type="number"
+            min="0"
+            placeholder="0"
+          />
+        </div>
+        <div class="field">
+          <label>Stock *</label>
+          <input
+            formControlName="stock"
+            type="number"
+            min="0"
+            placeholder="0"
+          />
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select formControlName="category">
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c">
+              {{ c }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Media upload -->
+      <div class="section-title">Images & Video</div>
+      <div
+        class="drop-zone"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop($event)"
+      >
+        <input
+          type="file"
+          multiple
+          accept="image/*,video/*"
+          (change)="onFiles($event)"
+          #fi
+          hidden
+        />
+        <div class="drop-content">
+          <div class="upload-icon">&#128247;</div>
+          <p>Drag & drop images and videos here</p>
+          <p class="hint">or</p>
+          <button type="button" (click)="fi.click()" class="browse-btn">
+            Browse Files
+          </button>
+          <p class="hint">JPG, PNG, WEBP · MP4, WEBM, MOV · Max 200MB each</p>
+        </div>
+      </div>
+
+      <!-- New file previews -->
+      <div class="preview-grid" *ngIf="previews.length">
+        <div class="prev-item" *ngFor="let p of previews; let i = index">
+          <img *ngIf="p.type === 'image'" [src]="p.url" />
+          <div *ngIf="p.type === 'video'" class="vid-prev">
+            <span>&#9654;</span>
+            <p>{{ p.name }}</p>
+          </div>
+          <button type="button" class="del-btn" (click)="removePreview(i)">
+            &#10005;
+          </button>
+          <span class="type-badge">{{ p.type }}</span>
+        </div>
+      </div>
+
+      <!-- Existing media (edit mode) -->
+      <div *ngIf="isEdit && product?.media?.length">
+        <div class="section-title">Existing Media</div>
+        <div class="preview-grid">
+          <div class="prev-item" *ngFor="let m of product!.media">
+            <img *ngIf="m.resourceType === 'image'" [src]="m.url" />
+            <div *ngIf="m.resourceType === 'video'" class="vid-prev">
+              <span>&#9654;</span>
+              <p>Video</p>
+            </div>
+            <button type="button" class="del-btn" (click)="deleteExisting(m)">
+              &#10005;
+            </button>
+            <span class="type-badge">{{ m.resourceType }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/products" class="cancel-btn">Cancel</a>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="form.invalid || saving"
+        >
+          {{
+            saving ? "Saving..." : isEdit ? "Update Product" : "List Product"
+          }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
