@@ -1,7 +1,15 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/gaurds/auth.gaurd';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./components/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
+  },
   {
     path: 'products',
     loadComponent: () =>
@@ -11,6 +19,7 @@ export const routes: Routes = [
   },
   {
     path: 'products/new',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./components/products/product-form/product-form.component').then(
         (m) => m.ProductFormComponent,
@@ -25,6 +34,7 @@ export const routes: Routes = [
   },
   {
     path: 'products/:id/edit',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./components/products/product-form/product-form.component').then(
         (m) => m.ProductFormComponent,
