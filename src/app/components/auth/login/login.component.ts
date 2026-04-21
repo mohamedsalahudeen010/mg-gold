@@ -14,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="login-left">
           <div class="brand">
             <span class="crown">♛</span>
-            <h2>GoldMart Admin</h2>
+            <h2>MG Gold</h2>
             <p>Sign in to manage your gold shop inventory</p>
           </div>
         </div>

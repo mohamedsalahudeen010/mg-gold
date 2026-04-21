@@ -1,50 +1,40 @@
 <nav class="navbar">
   <div class="nav-inner">
-    <a routerLink="/products" class="logo">ShopZone</a>
+    <a routerLink="/products" class="logo"
+      ><span>♛</span><span class="logo-text"> MG Gold</span></a
+    >
+    <button class="logout-btn" (click)="auth.logout()">Logout</button>
   </div>
 </nav>
 
 <div class="form-page">
   <div class="form-card">
-    <h2>{{ isEdit ? "Edit Product" : "List a New Product" }}</h2>
+    <div class="form-header">
+      <h2>{{ isEdit ? "✏️ Edit Product" : "+ List New Product" }}</h2>
+      <a routerLink="/products" class="cancel-link">Cancel</a>
+    </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <!-- Basic info -->
-      <div class="section-title">Basic Information</div>
-
-      <div class="field">
-        <label>Product Name *</label>
-        <input formControlName="name" placeholder="Enter product name" />
-      </div>
-      <div class="field">
-        <label>Description</label>
-        <textarea
-          formControlName="description"
-          rows="4"
-          placeholder="Describe your product"
-        ></textarea>
+      <div class="section-title">Product Details</div>
+      <div class="row-2">
+        <div class="field">
+          <label>Product Name *</label>
+          <input
+            formControlName="name"
+            placeholder="e.g. Classic Solitaire Ring"
+          />
+        </div>
+        <div class="field">
+          <label>Product Type *</label>
+          <input
+            formControlName="productType"
+            placeholder="e.g. Solitaire Ring"
+          />
+        </div>
       </div>
       <div class="row-3">
         <div class="field">
-          <label>Price (₹) *</label>
-          <input
-            formControlName="price"
-            type="number"
-            min="0"
-            placeholder="0"
-          />
-        </div>
-        <div class="field">
-          <label>Stock *</label>
-          <input
-            formControlName="stock"
-            type="number"
-            min="0"
-            placeholder="0"
-          />
-        </div>
-        <div class="field">
-          <label>Category</label>
+          <label>Category *</label>
           <select formControlName="category">
             <option value="">Select category</option>
             <option *ngFor="let c of categories" [value]="c">
@@ -52,65 +42,124 @@
             </option>
           </select>
         </div>
+        <div class="field">
+          <label>Karat *</label>
+          <select formControlName="karat">
+            <option value="">Select karat</option>
+            <option *ngFor="let k of karats" [value]="k">{{ k }}K</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Hallmark *</label>
+          <input formControlName="hallmark" placeholder="e.g. BIS 916" />
+        </div>
+      </div>
+      <div class="row-3">
+        <div class="field">
+          <label>Price (₹) *</label>
+          <input formControlName="price" type="number" min="0" />
+        </div>
+        <div class="field">
+          <label>Weight (grams) *</label>
+          <input formControlName="weight" type="number" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Stock *</label>
+          <input formControlName="stock" type="number" min="0" />
+        </div>
       </div>
 
-      <!-- Media upload -->
-      <div class="section-title">Images & Video</div>
+      <div class="section-title">Product Images</div>
       <div
         class="drop-zone"
         (dragover)="$event.preventDefault()"
-        (drop)="onDrop($event)"
+        (drop)="onDropImages($event)"
       >
         <input
           type="file"
           multiple
-          accept="image/*,video/*"
-          (change)="onFiles($event)"
-          #fi
+          accept="image/*"
+          (change)="onImages($event)"
+          #imgInput
           hidden
         />
         <div class="drop-content">
-          <div class="upload-icon">&#128247;</div>
-          <p>Drag & drop images and videos here</p>
-          <p class="hint">or</p>
-          <button type="button" (click)="fi.click()" class="browse-btn">
-            Browse Files
-          </button>
-          <p class="hint">JPG, PNG, WEBP · MP4, WEBM, MOV · Max 200MB each</p>
+          <div class="upload-icon">🖼️</div>
+          <p>
+            Drag & drop images or
+            <button type="button" (click)="imgInput.click()">browse</button>
+          </p>
+          <p class="hint">JPG, PNG, WEBP · Max 10 · First = thumbnail</p>
         </div>
       </div>
-
-      <!-- New file previews -->
-      <div class="preview-grid" *ngIf="previews.length">
-        <div class="prev-item" *ngFor="let p of previews; let i = index">
-          <img *ngIf="p.type === 'image'" [src]="p.url" />
-          <div *ngIf="p.type === 'video'" class="vid-prev">
-            <span>&#9654;</span>
-            <p>{{ p.name }}</p>
-          </div>
-          <button type="button" class="del-btn" (click)="removePreview(i)">
-            &#10005;
+      <div class="preview-grid" *ngIf="imagePreviews.length">
+        <div class="prev-item" *ngFor="let p of imagePreviews; let i = index">
+          <img [src]="p.url" [alt]="p.name" />
+          <button type="button" class="del-btn" (click)="removeImage(i)">
+            ✕
           </button>
-          <span class="type-badge">{{ p.type }}</span>
+          <span class="thumb-label" *ngIf="i === 0">Thumbnail</span>
         </div>
       </div>
-
-      <!-- Existing media (edit mode) -->
-      <div *ngIf="isEdit && product?.media?.length">
-        <div class="section-title">Existing Media</div>
+      <div *ngIf="isEdit && product?.images?.length">
+        <p class="existing-label">Existing images</p>
         <div class="preview-grid">
-          <div class="prev-item" *ngFor="let m of product!.media">
-            <img *ngIf="m.resourceType === 'image'" [src]="m.url" />
-            <div *ngIf="m.resourceType === 'video'" class="vid-prev">
-              <span>&#9654;</span>
-              <p>Video</p>
-            </div>
-            <button type="button" class="del-btn" (click)="deleteExisting(m)">
-              &#10005;
+          <div class="prev-item" *ngFor="let img of product!.images">
+            <img [src]="img.url" />
+            <button
+              type="button"
+              class="del-btn"
+              (click)="deleteExistingImage(img)"
+            >
+              ✕
             </button>
-            <span class="type-badge">{{ m.resourceType }}</span>
+            <span class="thumb-label" *ngIf="img.isThumbnail">Thumbnail</span>
           </div>
         </div>
+      </div>
+
+      <div class="section-title">
+        Product Video <span class="optional">(optional)</span>
+      </div>
+      <div
+        class="drop-zone"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDropVideo($event)"
+      >
+        <input
+          type="file"
+          accept="video/*"
+          (change)="onVideo($event)"
+          #vidInput
+          hidden
+        />
+        <div class="drop-content">
+          <div class="upload-icon">🎬</div>
+          <ng-container *ngIf="videoFile; else noVid">
+            <p class="vid-name">{{ videoFile.name }}</p>
+            <button type="button" class="remove-vid" (click)="videoFile = null">
+              Remove
+            </button>
+          </ng-container>
+          <ng-template #noVid>
+            <p>
+              Drag & drop a video or
+              <button type="button" (click)="vidInput.click()">browse</button>
+            </p>
+            <p class="hint">MP4, WEBM, MOV · Max 200MB</p>
+          </ng-template>
+        </div>
+      </div>
+      <div
+        *ngIf="isEdit && product?.video && !videoFile"
+        class="existing-video"
+      >
+        <p class="existing-label">Existing video</p>
+        <video
+          [src]="product!.video!.url"
+          controls
+          class="existing-vid-player"
+        ></video>
       </div>
 
       <div class="form-actions">

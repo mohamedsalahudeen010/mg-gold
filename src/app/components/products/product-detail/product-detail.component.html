@@ -1,201 +1,141 @@
 <ng-container *ngIf="product; else loading">
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="nav-inner">
-      <a routerLink="/products" class="logo">ShopZone</a>
-      <input
-        class="search"
-        type="text"
-        placeholder="Search for products, brands and more"
-      />
-      <a [routerLink]="['/products', product._id, 'edit']" class="sell-btn"
-        >Edit</a
+      <a routerLink="/products" class="logo"
+        ><span>♛</span><span class="logo-text"> MG Gold</span></a
       >
+      <div class="nav-right">
+        <ng-container *ngIf="auth.isAdmin()">
+          <a
+            [routerLink]="['/products', product._id, 'edit']"
+            class="nav-btn edit"
+            >✏️ Edit</a
+          >
+          <button class="nav-btn logout" (click)="auth.logout()">Logout</button>
+        </ng-container>
+        <a *ngIf="!auth.isAdmin()" routerLink="/login" class="nav-btn login"
+          >Admin Login</a
+        >
+      </div>
     </div>
   </nav>
 
-  <!-- Breadcrumb -->
   <div class="breadcrumb">
-    <a routerLink="/products">Home</a> &rsaquo;
-    <a routerLink="/products">{{ product.category }}</a> &rsaquo;
-    <span>{{ product.name }}</span>
+    <a routerLink="/products">Home</a> › <span>{{ product.category }}</span> ›
+    <span class="current">{{ product.name }}</span>
   </div>
 
   <div class="detail-wrap">
-    <!-- LEFT: Carousel + Video -->
+    <!-- LEFT: media -->
     <div class="media-col">
-      <!-- Sticky media section -->
       <div class="sticky-media">
-        <!-- Main carousel display -->
-        <div class="carousel-main">
+        <div class="carousel">
           <button
-            class="arr-btn left"
-            (click)="prevSlide()"
-            [disabled]="images.length <= 1"
+            class="arr left"
+            (click)="prev()"
+            [disabled]="product.images.length <= 1"
           >
             &#8249;
           </button>
-          <div class="carousel-track" #track>
+          <div class="carousel-inner">
             <div
-              class="carousel-slide"
-              *ngFor="let img of images; let i = index"
-              [class.active]="i === activeIdx"
+              class="slide"
+              *ngFor="let img of product.images; let i = index"
+              [class.active]="i === idx"
             >
-              <img
-                [src]="img.url"
-                [alt]="img.originalName"
-                onerror="
-                  this.src = 'https://placehold.co/500x500?text=No+Image'
-                "
-              />
+              <img [src]="img.url" [alt]="img.originalName" />
+            </div>
+            <div class="no-img" *ngIf="!product.images.length">
+              No images available
             </div>
           </div>
           <button
-            class="arr-btn right"
-            (click)="nextSlide()"
-            [disabled]="images.length <= 1"
+            class="arr right"
+            (click)="next()"
+            [disabled]="product.images.length <= 1"
           >
             &#8250;
           </button>
-          <!-- Dot indicators -->
-          <div class="dots">
+          <div class="dots" *ngIf="product.images.length > 1">
             <span
-              *ngFor="let img of images; let i = index"
-              [class.active]="i === activeIdx"
-              (click)="goToSlide(i)"
+              *ngFor="let img of product.images; let i = index"
+              [class.active]="i === idx"
+              (click)="idx = i"
             ></span>
           </div>
         </div>
-
-        <!-- Thumbnail strip -->
-        <div class="thumb-strip" *ngIf="images.length > 1">
+        <div class="thumbs" *ngIf="product.images.length > 1">
           <div
-            *ngFor="let img of images; let i = index"
-            class="thumb-item"
-            [class.active]="i === activeIdx"
-            (click)="goToSlide(i)"
+            *ngFor="let img of product.images; let i = index"
+            class="thumb"
+            [class.active]="i === idx"
+            (click)="idx = i"
           >
             <img [src]="img.url" [alt]="img.originalName" />
           </div>
         </div>
-
-        <!-- Action buttons -->
-        <div class="action-btns">
-          <button class="btn-cart">&#128722; Add to Cart</button>
-          <button class="btn-buy">&#9889; Buy Now</button>
-        </div>
-
-        <!-- Video section -->
-        <div class="video-section" *ngIf="video">
-          <h4 class="section-label">Product Video</h4>
-          <div class="video-wrap">
-            <video
-              #videoPlayer
-              [src]="video.url"
-              controls
-              playsinline
-              preload="metadata"
-              class="product-video"
-            >
-              Your browser does not support video.
-            </video>
-          </div>
+        <div class="video-section" *ngIf="product.video">
+          <p class="vid-label">Product Video</p>
+          <video
+            [src]="product.video.url"
+            controls
+            playsinline
+            preload="metadata"
+            class="video"
+          ></video>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: Product info -->
+    <!-- RIGHT: info -->
     <div class="info-col">
       <p class="info-cat">{{ product.category }}</p>
       <h1 class="info-name">{{ product.name }}</h1>
-
-      <!-- Rating row -->
-      <div class="rating-row">
-        <span class="rating-badge">4.2 ★</span>
-        <span class="rating-count">1,284 Ratings &amp; 312 Reviews</span>
-        <span class="assured">Flipkart Assured</span>
+      <p class="info-type">{{ product.productType }}</p>
+      <div class="price-row">
+        <span class="price">₹{{ product.price | number }}</span>
+        <span class="tax-note">Inclusive of all taxes</span>
       </div>
-
-      <!-- Pricing -->
-      <div class="price-section">
-        <span class="info-price">₹{{ product.price | number }}</span>
-        <span class="info-mrp"
-          >₹{{ product.price * 1.2 | number: "1.0-0" }}</span
-        >
-        <span class="info-disc">20% off</span>
-      </div>
-      <p class="emi-text">
-        EMI from ₹{{ product.price / 12 | number: "1.0-0" }}/month
-      </p>
-
-      <!-- Offers -->
-      <div class="offers-section">
-        <h4>Available Offers</h4>
-        <ul>
-          <li><strong>Bank Offer</strong> 10% off on HDFC Bank Cards</li>
-          <li>
-            <strong>Special Price</strong> Get extra 5% off (price inclusive of
-            discount)
-          </li>
-          <li>
-            <strong>No Cost EMI</strong> ₹{{
-              product.price / 6 | number: "1.0-0"
-            }}/month. Standard EMI also available
-          </li>
-        </ul>
-      </div>
-
-      <!-- Delivery -->
-      <div class="delivery-row">
-        <span class="d-icon">&#128666;</span>
-        <div>
-          <p class="d-label">Delivery</p>
-          <p class="d-info">Free delivery by <strong>Tomorrow</strong></p>
+      <div class="specs">
+        <div class="spec-item">
+          <span class="spec-label">Karat</span>
+          <span class="spec-val">{{ product.karat }}K Gold</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Weight</span>
+          <span class="spec-val">{{ product.weight }}g</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Hallmark</span>
+          <span class="spec-val">{{ product.hallmark }}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Availability</span>
+          <span
+            class="spec-val"
+            [class.green]="product.stock > 0"
+            [class.red]="product.stock === 0"
+          >
+            {{
+              product.stock > 0
+                ? "In Stock (" + product.stock + " pcs)"
+                : "Out of Stock"
+            }}
+          </span>
         </div>
       </div>
-
-      <!-- Stock -->
-      <div class="stock-row">
-        <span [class]="product.stock > 0 ? 'in-stock' : 'out-stock'">
-          {{ product.stock > 0 ? "In Stock" : "Out of Stock" }}
-        </span>
-        <span
-          class="stock-count"
-          *ngIf="product.stock > 0 && product.stock < 10"
-        >
-          &nbsp; Only {{ product.stock }} left!
-        </span>
+      <div class="actions" *ngIf="product.stock > 0">
+        <!-- <button class="btn-cart">🛒 Add to Cart</button>
+        <button class="btn-buy">Buy Now</button> -->
       </div>
-
-      <!-- Highlights -->
-      <div class="highlights">
-        <h4>Highlights</h4>
-        <ul>
-          <li>Category: {{ product.category }}</li>
-          <li>Stock available: {{ product.stock }} units</li>
-          <li>Listed on: {{ product.createdAt | date: "mediumDate" }}</li>
-        </ul>
-      </div>
-
-      <!-- Description -->
-      <div class="description">
-        <h4>Description</h4>
-        <p>{{ product.description }}</p>
-      </div>
-
-      <!-- Seller info -->
-      <div class="seller-row">
-        <span class="s-label">Seller</span>
-        <span class="s-name">SuperStore_Official</span>
-        <span class="s-rating">4.5 ★</span>
+      <div class="purity-badge">
+        <span>✓</span> BIS Certified &nbsp;|&nbsp; <span>✓</span> Hallmarked
+        &nbsp;|&nbsp; <span>✓</span> Lifetime Exchange
       </div>
     </div>
   </div>
 </ng-container>
 
 <ng-template #loading>
-  <div class="loading-screen">
-    <div class="spinner"></div>
-    <p>Loading product...</p>
-  </div>
+  <div class="loading"><div class="spinner"></div></div>
 </ng-template>
